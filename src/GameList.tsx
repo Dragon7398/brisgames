@@ -5,11 +5,12 @@ export interface GameDefinition {
   gameDescription: string;
   gameTags: string[];
   gamePriority: number;
+  playedWith?: string[]
 }
 
 interface ComponentProps {
   games?: GameDefinition[];
-} 
+}
 
 export const GameList: React.FC<ComponentProps> = (props) => {
   return (

@@ -38,15 +38,17 @@ header p {
 }
 
 #tabs menu,
-#timeFilters menu {
-  margin: 0;
+#timeFilters menu,
+#gamerFilters menu {
+  margin: 0.5em 0;
   padding: 0;
   display: flex;
   gap: 0.25rem;
 }
 
 #tabs button,
-#timeFilters button {
+#timeFilters button
+#gamerFilters button {
   font: inherit;
   font-size: 0.85rem;
   background-color: #282f33;
@@ -66,7 +68,9 @@ header p {
 }
 
 #timeFilters button:hover,
-#timeFilters button.active {
+#timeFilters button.active,
+#gamerFilters button:hover,
+#gamerFilters button.active {
   background-color: #4b48f3;
   color: #e0eff1;
 }
@@ -119,6 +123,7 @@ select {
   border: 1px solid var(--select-border);
   border-radius: 0.25em;
   padding: 0.25em 0.5em;
+  margin: 0.5em 0;
 
   font-size: 1rem;
   cursor: pointer;
