@@ -18,28 +18,31 @@ export default function App() {
   const [FullGamersList, setFullGamersList] = useState<string[]>([]);
 
   const fetchGamesHandler = useCallback(async () => {
-      const response = await fetch('https://brisgames-3cc42-default-rtdb.firebaseio.com/PCGames.json');
-      if (!response.ok) {
-        throw new Error('Something went wrong!');
-      }
+    const response = await fetch(
+      "https://brisgames-3cc42-default-rtdb.firebaseio.com/PCGames.json",
+    );
+    if (!response.ok) {
+      throw new Error("Something went wrong!");
+    }
 
-      const data = await response.json();
+    const data = await response.json();
 
-      const loadedGames : GameDefinition[] = [];
+    const loadedGames: GameDefinition[] = [];
 
-      for (const key in data) {
-        loadedGames.push({
-          gameName: data[key].gameName,
-          gameDescription: data[key].gameDescription,
-          gameTags: data[key].gameTags,
-          gamePriority: data[key].gamePriority,
-          playedWith: data[key].playedWith
-        });
-      }
+    for (const key in data) {
+      loadedGames.push({
+        gameName: data[key].gameName,
+        gameDescription: data[key].gameDescription,
+        gameTags: data[key].gameTags,
+        gamePriority: data[key].gamePriority,
+        playedWith: data[key].playedWith,
+      });
+    }
 
-      setPCGamesList(loadedGames);
+    setPCGamesList(loadedGames);
 
-      const FullPCGameTags: string[] = loadedGames.map((game) => game.gameTags)
+    const FullPCGameTags: string[] = loadedGames
+      .map((game) => game.gameTags)
       .flat()
       .filter(function (item: string) {
         return (
@@ -47,37 +50,39 @@ export default function App() {
         );
       })
       .sort();
-    
-      setPCGameTags([...new Set(FullPCGameTags)]);
 
-      const PCGamersList: string[] = (loadedGames.map(
-        (game) => game.playedWith ? game.playedWith : []
-      )
+    setPCGameTags([...new Set(FullPCGameTags)]);
+
+    const PCGamersList: string[] = loadedGames
+      .map((game) => (game.playedWith ? game.playedWith : []))
       .flat()
-      .sort())
+      .sort();
 
-      const response2 = await fetch('https://brisgames-3cc42-default-rtdb.firebaseio.com/SwitchGames.json');
-      if (!response2.ok) {
-        throw new Error('Something went wrong!');
-      }
+    const response2 = await fetch(
+      "https://brisgames-3cc42-default-rtdb.firebaseio.com/SwitchGames.json",
+    );
+    if (!response2.ok) {
+      throw new Error("Something went wrong!");
+    }
 
-      const data2 = await response2.json();
+    const data2 = await response2.json();
 
-      const loadedGames2 : GameDefinition[] = [];
+    const loadedGames2: GameDefinition[] = [];
 
-      for (const key in data2) {
-        loadedGames2.push({
-          gameName: data2[key].gameName,
-          gameDescription: data2[key].gameDescription,
-          gameTags: data2[key].gameTags,
-          gamePriority: data2[key].gamePriority,
-          playedWith: data2[key].playedWith
-        });
-      }
+    for (const key in data2) {
+      loadedGames2.push({
+        gameName: data2[key].gameName,
+        gameDescription: data2[key].gameDescription,
+        gameTags: data2[key].gameTags,
+        gamePriority: data2[key].gamePriority,
+        playedWith: data2[key].playedWith,
+      });
+    }
 
-      setSwitchGamesList(loadedGames2);
+    setSwitchGamesList(loadedGames2);
 
-      const FullSwitchGameTags: string[] = loadedGames2.map((game) => game.gameTags)
+    const FullSwitchGameTags: string[] = loadedGames2
+      .map((game) => game.gameTags)
       .flat()
       .filter(function (item: string) {
         return (
@@ -85,19 +90,18 @@ export default function App() {
         );
       })
       .sort();
-    
-      setSwitchGameTags([...new Set(FullSwitchGameTags)]);
-      
-      const SwitchGamersList: string[] = (loadedGames2.map(
-        (game) => game.playedWith ? game.playedWith : []
-      )
-      .flat()
-      .sort())
-      
-      const OverFullGamersList: string[] = PCGamersList.concat(SwitchGamersList);
 
-      setTagList([...new Set(FullPCGameTags)]);
-      setFullGamersList([...new Set(OverFullGamersList)]);
+    setSwitchGameTags([...new Set(FullSwitchGameTags)]);
+
+    const SwitchGamersList: string[] = loadedGames2
+      .map((game) => (game.playedWith ? game.playedWith : []))
+      .flat()
+      .sort();
+
+    const OverFullGamersList: string[] = PCGamersList.concat(SwitchGamersList);
+
+    setTagList([...new Set(FullPCGameTags)]);
+    setFullGamersList([...new Set(OverFullGamersList)]);
   }, []);
 
   useEffect(() => {
@@ -118,38 +122,43 @@ export default function App() {
 
     if (!includeSlowPaced) {
       returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Slow-paced")
+        (game) => !game.gameTags.includes("Slow-paced"),
       );
     }
 
     if (!includeMidPaced) {
       returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Mid-paced")
+        (game) => !game.gameTags.includes("Mid-paced"),
       );
     }
 
     if (!includeFastPaced) {
       returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Fast-paced")
+        (game) => !game.gameTags.includes("Fast-paced"),
       );
     }
 
     if (activeTag !== "") {
       returnList = returnList.filter((game) =>
-        game.gameTags.includes(activeTag)
+        game.gameTags.includes(activeTag),
       );
     }
 
     if (activeGamer !== "" && gamerFilter !== "") {
       if (gamerFilter == "Previous") {
         returnList = returnList.filter((game) =>
-          game.playedWith?.includes(activeGamer)
+          game.playedWith?.includes(activeGamer),
+        );
+      } else if (gamerFilter == "Unplayed") {
+        returnList = returnList.filter(
+          (game) => !game.playedWith?.includes(activeGamer),
         );
       }
-      else if (gamerFilter == "Unplayed") {
-        returnList = returnList.filter((game) =>
-          !game.playedWith?.includes(activeGamer)
-        );
+    } else if (activeGamer == "" && gamerFilter !== "") {
+      if (gamerFilter == "Previous") {
+        returnList = returnList.filter((game) => game.playedWith);
+      } else if (gamerFilter == "Unplayed") {
+        returnList = returnList.filter((game) => !game.playedWith);
       }
     }
 
@@ -216,28 +225,22 @@ export default function App() {
         </menu>
       </div>
       <div id="gamerFilters">
-      <menu>
+        <menu>
           <button
             className={gamerFilter == "All" ? "active" : ""}
-            onClick={() =>
-              setGamerFilter("All")
-            }
+            onClick={() => setGamerFilter("All")}
           >
             All Games
           </button>
           <button
             className={gamerFilter == "Previous" ? "active" : ""}
-            onClick={() =>
-              setGamerFilter("Previous")
-            }
+            onClick={() => setGamerFilter("Previous")}
           >
             Previously Played
           </button>
           <button
             className={gamerFilter == "Unplayed" ? "active" : ""}
-            onClick={() =>
-              setGamerFilter("Unplayed")
-            }
+            onClick={() => setGamerFilter("Unplayed")}
           >
             Unplayed
           </button>
@@ -246,7 +249,9 @@ export default function App() {
           <select onChange={handleGamerFilterChange} value={activeGamer}>
             <option value=""> -- Filter by gamer -- </option>
             {FullGamersList.map((gamer) => (
-              <option value={gamer} key={gamer}>{gamer}</option>
+              <option value={gamer} key={gamer}>
+                {gamer}
+              </option>
             ))}
           </select>
         </div>
@@ -255,7 +260,9 @@ export default function App() {
         <select onChange={handleFilterChange} value={activeTag}>
           <option value=""> -- Filter by tag -- </option>
           {tagList.map((tag) => (
-            <option value={tag} key={tag}>{tag}</option>
+            <option value={tag} key={tag}>
+              {tag}
+            </option>
           ))}
         </select>
       </div>
