@@ -162,7 +162,10 @@ export default function App() {
       }
     }
 
-    return returnList.sort((a, b) => b.gamePriority - a.gamePriority);
+    return returnList.sort(
+      (a, b) =>
+        b.gamePriority - a.gamePriority || (a.gameName > b.gameName ? 1 : -1),
+    );
   }
 
   function ChangeGameList(gameType: number) {
