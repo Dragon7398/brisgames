@@ -1,3 +1,32 @@
+:root {
+  --bg:         #0f1316;
+  --surface:    #131b1f;
+  --card:       #182025;
+  --card-hov:   #1e2c33;
+  --border:     #1e2e35;
+  --border-hi:  #28404a;
+  --cyan:       #48d9f3;
+  --cyan-dim:   rgba(72, 217, 243, 0.12);
+  --purple:     #6660f5;
+  --purple-dim: rgba(102, 96, 245, 0.14);
+  --amber:      #f5a623;
+  --amber-dim:  rgba(245, 166, 35, 0.13);
+  --green:      #48f3a0;
+  --green-dim:  rgba(72, 243, 160, 0.12);
+  --red:        #f35448;
+  --red-dim:    rgba(243, 84, 72, 0.13);
+  --text-1:     #e4f2f5;
+  --text-2:     #8aacb8;
+  --text-3:     #3d5e6b;
+}
+
+.campaign-section {
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-1);
+}
+
 * {
   box-sizing: border-box;
 }
