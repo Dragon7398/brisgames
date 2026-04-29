@@ -46,7 +46,7 @@ export default function App() {
     );
     setAllGames(loadedGames);
 
-    const firstPlatformSlug = Object.keys(loadedPlatforms)[0] ?? "";
+    const firstPlatformSlug = Object.keys(loadedPlatforms)[1] ?? "";
     setActivePlatformSlug(firstPlatformSlug);
   }, []);
 
@@ -99,31 +99,49 @@ export default function App() {
   return (
     <div className="App">
       <div id="tagTypeFilters">
-        {Object.entries(tagTypes).map(([typeSlug, tt]) => (
-          <div key={typeSlug} id="timeFilters">
-            <menu>
-              <button
-                className={!activeTagPerType[typeSlug] ? "active" : ""}
-                onClick={() => handleTagToggle(typeSlug, "")}
+        {Object.entries(tagTypes).map(([typeSlug, tt]) =>
+          tt.name === "Genre" ? (
+            <div key={typeSlug} className="select">
+              <select
+                value={activeTagPerType[typeSlug] ?? ""}
+                onChange={(e) => handleTagToggle(typeSlug, e.target.value)}
               >
-                All {tt.name}
-              </button>
-              {Object.entries(tags)
-                .filter(([, t]) => t.tagTypeKey === typeSlug)
-                .map(([tagSlug, tag]) => (
-                  <button
-                    key={tagSlug}
-                    className={
-                      activeTagPerType[typeSlug] === tagSlug ? "active" : ""
-                    }
-                    onClick={() => handleTagToggle(typeSlug, tagSlug)}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
-            </menu>
-          </div>
-        ))}
+                <option value="">All {tt.name}</option>
+                {Object.entries(tags)
+                  .filter(([, t]) => t.tagTypeKey === typeSlug)
+                  .map(([tagSlug, tag]) => (
+                    <option key={tagSlug} value={tagSlug}>
+                      {tag.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          ) : (
+            <div key={typeSlug} id="timeFilters">
+              <menu>
+                <button
+                  className={!activeTagPerType[typeSlug] ? "active" : ""}
+                  onClick={() => handleTagToggle(typeSlug, "")}
+                >
+                  All {tt.name}
+                </button>
+                {Object.entries(tags)
+                  .filter(([, t]) => t.tagTypeKey === typeSlug)
+                  .map(([tagSlug, tag]) => (
+                    <button
+                      key={tagSlug}
+                      className={
+                        activeTagPerType[typeSlug] === tagSlug ? "active" : ""
+                      }
+                      onClick={() => handleTagToggle(typeSlug, tagSlug)}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+              </menu>
+            </div>
+          )
+        )}
       </div>
       <div id="gamerFilters">
         <menu>
