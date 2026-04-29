@@ -39,7 +39,7 @@ export function detectInitialScreen(): ScreenState {
       return { view: "vote", playerId: pid };
     }
     if (p.get("player")) return { view: "unauth" }; // param present, token wrong
-  } catch (_) { /* ignore URL parse errors */ }
+  } catch { /* ignore URL parse errors */ }
   return { view: "login" };
 }
 
@@ -49,7 +49,7 @@ export function pushUrl(params: Record<string, string>): void {
     ["player", "t"].forEach((k) => url.searchParams.delete(k));
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     window.history.pushState({}, "", url.toString());
-  } catch (_) { /* ignore URL parse errors */ }
+  } catch { /* ignore URL parse errors */ }
 }
 
 export function buildPlayerLink(playerId: string): string {
