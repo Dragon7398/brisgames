@@ -1,288 +1,176 @@
 import { useState, useCallback, useEffect } from "react";
-import { GameDefinition, GameList } from "./GameList";
+import { ref, get } from "firebase/database";
+import { db } from "./firebase";
+import {
+  GameDefinition,
+  GameList,
+  Platform,
+  TagType,
+  Tag,
+  Player,
+} from "./GameList";
 import "./styles.css";
 
 export default function App() {
-  const [activeContentIndex, setActiveContentIndex] = useState(0);
-  const [includeSlowPaced, setSlowPaced] = useState(true);
-  const [includeMidPaced, setMidPaced] = useState(true);
-  const [includeFastPaced, setFastPaced] = useState(true);
-  const [tagList, setTagList] = useState<string[]>([]);
-  const [activeTag, setActiveTag] = useState("");
-  const [activeGamer, setActiveGamer] = useState("");
+  const [platforms, setPlatforms] = useState<Record<string, Platform>>({});
+  const [tagTypes, setTagTypes] = useState<Record<string, TagType>>({});
+  const [tags, setTags] = useState<Record<string, Tag>>({});
+  const [players, setPlayers] = useState<Record<string, Player>>({});
+  const [allGames, setAllGames] = useState<GameDefinition[]>([]);
+
+  const [activePlatformSlug, setActivePlatformSlug] = useState("");
+  const [activeTagPerType, setActiveTagPerType] = useState<Record<string, string>>({});
+  const [activePlayerSlug, setActivePlayerSlug] = useState("");
   const [gamerFilter, setGamerFilter] = useState("All");
-  const [PCGamesList, setPCGamesList] = useState<GameDefinition[]>([]);
-  const [PCGameTags, setPCGameTags] = useState<string[]>([]);
-  const [SwitchGamesList, setSwitchGamesList] = useState<GameDefinition[]>([]);
-  const [SwitchGameTags, setSwitchGameTags] = useState<string[]>([]);
-  const [FullGamersList, setFullGamersList] = useState<string[]>([]);
 
   const fetchGamesHandler = useCallback(async () => {
-    const response = await fetch(
-      "https://brisgames-3cc42-default-rtdb.firebaseio.com/PCGames.json",
+    const [platSnap, tagTypeSnap, tagSnap, playerSnap, gameSnap] =
+      await Promise.all([
+        get(ref(db, "platforms")),
+        get(ref(db, "tagTypes")),
+        get(ref(db, "tags")),
+        get(ref(db, "players")),
+        get(ref(db, "games")),
+      ]);
+
+    const loadedPlatforms: Record<string, Platform> = platSnap.val() ?? {};
+    setPlatforms(loadedPlatforms);
+    setTagTypes(tagTypeSnap.val() ?? {});
+    setTags(tagSnap.val() ?? {});
+    setPlayers(playerSnap.val() ?? {});
+
+    const rawGames: Record<string, Omit<GameDefinition, "key">> =
+      gameSnap.val() ?? {};
+    const loadedGames: GameDefinition[] = Object.entries(rawGames).map(
+      ([key, g]) => ({ ...g, key })
     );
-    if (!response.ok) {
-      throw new Error("Something went wrong!");
-    }
+    setAllGames(loadedGames);
 
-    const data = await response.json();
-
-    const loadedGames: GameDefinition[] = [];
-
-    for (const key in data) {
-      loadedGames.push({
-        gameName: data[key].gameName,
-        gameDescription: data[key].gameDescription,
-        gameTags: data[key].gameTags,
-        gamePriority: data[key].gamePriority,
-        playedWith: data[key].playedWith,
-      });
-    }
-
-    setPCGamesList(loadedGames);
-
-    const FullPCGameTags: string[] = loadedGames
-      .map((game) => game.gameTags)
-      .flat()
-      .filter(function (item: string) {
-        return (
-          item !== "Fast-paced" && item !== "Mid-paced" && item !== "Slow-paced"
-        );
-      })
-      .sort();
-
-    setPCGameTags([...new Set(FullPCGameTags)]);
-
-    const PCGamersList: string[] = loadedGames
-      .map((game) => (game.playedWith ? game.playedWith : []))
-      .flat()
-      .sort();
-
-    const response2 = await fetch(
-      "https://brisgames-3cc42-default-rtdb.firebaseio.com/SwitchGames.json",
-    );
-    if (!response2.ok) {
-      throw new Error("Something went wrong!");
-    }
-
-    const data2 = await response2.json();
-
-    const loadedGames2: GameDefinition[] = [];
-
-    for (const key in data2) {
-      loadedGames2.push({
-        gameName: data2[key].gameName,
-        gameDescription: data2[key].gameDescription,
-        gameTags: data2[key].gameTags,
-        gamePriority: data2[key].gamePriority,
-        playedWith: data2[key].playedWith,
-      });
-    }
-
-    setSwitchGamesList(loadedGames2);
-
-    const FullSwitchGameTags: string[] = loadedGames2
-      .map((game) => game.gameTags)
-      .flat()
-      .filter(function (item: string) {
-        return (
-          item !== "Fast-paced" && item !== "Mid-paced" && item !== "Slow-paced"
-        );
-      })
-      .sort();
-
-    setSwitchGameTags([...new Set(FullSwitchGameTags)]);
-
-    const SwitchGamersList: string[] = loadedGames2
-      .map((game) => (game.playedWith ? game.playedWith : []))
-      .flat()
-      .sort();
-
-    const OverFullGamersList: string[] = PCGamersList.concat(SwitchGamersList);
-
-    setTagList([...new Set(FullPCGameTags)]);
-    setFullGamersList([...new Set(OverFullGamersList)]);
+    const firstPlatformSlug = Object.keys(loadedPlatforms)[0] ?? "";
+    setActivePlatformSlug(firstPlatformSlug);
   }, []);
 
   useEffect(() => {
     fetchGamesHandler();
   }, [fetchGamesHandler]);
 
-  function GetGameContent() {
-    let returnList: GameDefinition[];
+  function GetGameContent(): GameDefinition[] {
+    let result = allGames.filter((g) => g.platformKey === activePlatformSlug);
 
-    if (activeContentIndex === 0) {
-      returnList = PCGamesList;
-    } else if (activeContentIndex === 1) {
-      returnList = SwitchGamesList;
-    } else {
-      // Default case, should not happen.
-      returnList = PCGamesList;
-    }
-
-    if (!includeSlowPaced) {
-      returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Slow-paced"),
-      );
-    }
-
-    if (!includeMidPaced) {
-      returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Mid-paced"),
-      );
-    }
-
-    if (!includeFastPaced) {
-      returnList = returnList.filter(
-        (game) => !game.gameTags.includes("Fast-paced"),
-      );
-    }
-
-    if (activeTag !== "") {
-      returnList = returnList.filter((game) =>
-        game.gameTags.includes(activeTag),
-      );
-    }
-
-    if (activeGamer !== "" && gamerFilter !== "") {
-      if (gamerFilter == "Previous") {
-        returnList = returnList.filter((game) =>
-          game.playedWith?.includes(activeGamer),
-        );
-      } else if (gamerFilter == "Unplayed") {
-        returnList = returnList.filter(
-          (game) => !game.playedWith?.includes(activeGamer),
-        );
-      }
-    } else if (activeGamer == "" && gamerFilter !== "") {
-      if (gamerFilter == "Previous") {
-        returnList = returnList.filter((game) => game.playedWith);
-      } else if (gamerFilter == "Unplayed") {
-        returnList = returnList.filter((game) => !game.playedWith);
+    for (const [, tagSlug] of Object.entries(activeTagPerType)) {
+      if (tagSlug !== "") {
+        result = result.filter((g) => g.tags?.[tagSlug] === true);
       }
     }
 
-    return returnList.sort(
+    if (gamerFilter === "Previous") {
+      if (activePlayerSlug !== "") {
+        result = result.filter((g) => g.players?.[activePlayerSlug] === true);
+      } else {
+        result = result.filter(
+          (g) => g.players && Object.keys(g.players).length > 0
+        );
+      }
+    } else if (gamerFilter === "Unplayed") {
+      if (activePlayerSlug !== "") {
+        result = result.filter((g) => !g.players?.[activePlayerSlug]);
+      } else {
+        result = result.filter(
+          (g) => !g.players || Object.keys(g.players).length === 0
+        );
+      }
+    }
+
+    return result.sort(
       (a, b) =>
-        b.gamePriority - a.gamePriority || (a.gameName > b.gameName ? 1 : -1),
+        b.priority - a.priority || (a.name > b.name ? 1 : -1)
     );
   }
 
-  function ChangeGameList(gameType: number) {
-    setActiveContentIndex(gameType);
-
-    if (gameType === 0) {
-      setTagList(PCGameTags);
-    } else if (gameType === 1) {
-      setTagList(SwitchGameTags);
-    } else {
-      // Default case, should not happen.
-      setTagList(PCGameTags);
-    }
-
-    setActiveTag("");
+  function handlePlatformChange(slug: string) {
+    setActivePlatformSlug(slug);
+    setActiveTagPerType({});
   }
 
-  function handleFilterChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setActiveTag(e.target.value);
-  }
-
-  function handleGamerFilterChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setActiveGamer(e.target.value);
+  function handleTagToggle(typeSlug: string, tagSlug: string) {
+    setActiveTagPerType((prev) => ({ ...prev, [typeSlug]: tagSlug }));
   }
 
   return (
     <div className="App">
-      <div id="timeFilters">
-        <menu>
-          <button
-            className={includeSlowPaced ? "active" : ""}
-            onClick={() =>
-              setSlowPaced((prevState) => {
-                return !prevState;
-              })
-            }
-          >
-            Slow-paced
-          </button>
-          <button
-            className={includeMidPaced ? "active" : ""}
-            onClick={() =>
-              setMidPaced((prevState) => {
-                return !prevState;
-              })
-            }
-          >
-            Mid-paced
-          </button>
-          <button
-            className={includeFastPaced ? "active" : ""}
-            onClick={() =>
-              setFastPaced((prevState) => {
-                return !prevState;
-              })
-            }
-          >
-            Fast-paced
-          </button>
-        </menu>
+      <div id="tagTypeFilters">
+        {Object.entries(tagTypes).map(([typeSlug, tt]) => (
+          <div key={typeSlug} id="timeFilters">
+            <menu>
+              <button
+                className={!activeTagPerType[typeSlug] ? "active" : ""}
+                onClick={() => handleTagToggle(typeSlug, "")}
+              >
+                All {tt.name}
+              </button>
+              {Object.entries(tags)
+                .filter(([, t]) => t.tagTypeKey === typeSlug)
+                .map(([tagSlug, tag]) => (
+                  <button
+                    key={tagSlug}
+                    className={
+                      activeTagPerType[typeSlug] === tagSlug ? "active" : ""
+                    }
+                    onClick={() => handleTagToggle(typeSlug, tagSlug)}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+            </menu>
+          </div>
+        ))}
       </div>
       <div id="gamerFilters">
         <menu>
           <button
-            className={gamerFilter == "All" ? "active" : ""}
+            className={gamerFilter === "All" ? "active" : ""}
             onClick={() => setGamerFilter("All")}
           >
             All Games
           </button>
           <button
-            className={gamerFilter == "Previous" ? "active" : ""}
+            className={gamerFilter === "Previous" ? "active" : ""}
             onClick={() => setGamerFilter("Previous")}
           >
             Previously Played
           </button>
           <button
-            className={gamerFilter == "Unplayed" ? "active" : ""}
+            className={gamerFilter === "Unplayed" ? "active" : ""}
             onClick={() => setGamerFilter("Unplayed")}
           >
             Unplayed
           </button>
         </menu>
         <div className="select">
-          <select onChange={handleGamerFilterChange} value={activeGamer}>
-            <option value=""> -- Filter by gamer -- </option>
-            {FullGamersList.map((gamer) => (
-              <option value={gamer} key={gamer}>
-                {gamer}
+          <select
+            onChange={(e) => setActivePlayerSlug(e.target.value)}
+            value={activePlayerSlug}
+          >
+            <option value=""> -- Filter by player -- </option>
+            {Object.entries(players).map(([slug, p]) => (
+              <option value={slug} key={slug}>
+                {p.username}
               </option>
             ))}
           </select>
         </div>
       </div>
-      <div className="select">
-        <select onChange={handleFilterChange} value={activeTag}>
-          <option value=""> -- Filter by tag -- </option>
-          {tagList.map((tag) => (
-            <option value={tag} key={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
-      </div>
       <div id="tabs">
         <menu>
-          <button
-            className={activeContentIndex === 0 ? "active" : ""}
-            onClick={() => ChangeGameList(0)}
-          >
-            PC Games
-          </button>
-          <button
-            className={activeContentIndex === 1 ? "active" : ""}
-            onClick={() => ChangeGameList(1)}
-          >
-            Online Switch Games
-          </button>
+          {Object.entries(platforms).map(([slug, p]) => (
+            <button
+              key={slug}
+              className={activePlatformSlug === slug ? "active" : ""}
+              onClick={() => handlePlatformChange(slug)}
+            >
+              {p.name}
+            </button>
+          ))}
         </menu>
         <GameList games={GetGameContent()} />
       </div>
