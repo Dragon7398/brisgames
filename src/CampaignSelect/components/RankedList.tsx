@@ -138,6 +138,26 @@ export function RankedList({ catId, games, voteData, newIds, onChange, onClearNe
               )}
             </div>
 
+            {game.bggUrl && (
+              <a
+                href={game.bggUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="View on BoardGameGeek"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: 30, height: 28, borderRadius: 6, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "transparent", border: "1px solid var(--border)",
+                  color: "var(--text-3)", fontSize: 10, fontWeight: 700,
+                  textDecoration: "none", letterSpacing: "0.01em",
+                  transition: "all 0.12s", cursor: "pointer",
+                }}
+              >
+                BGG
+              </a>
+            )}
+
             {isNew && <NewBadge />}
 
             {/* Arrow buttons */}

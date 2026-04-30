@@ -11,6 +11,7 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
   const [newGameName, setNewGameName] = useState<Record<string, string>>({});
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
   const [draftDesc, setDraftDesc] = useState<string>("");
+  const [draftBggUrl, setDraftBggUrl] = useState<string>("");
 
   function addGame(catId: string) {
     const name = (newGameName[catId] ?? "").trim();
@@ -25,7 +26,7 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
   }
 
   function removeGame(catId: string, gameId: string) {
-    if (expandedGameId === gameId) setExpandedGameId(null);
+    if (expandedGameId === gameId) closeEditor();
     onCategoriesChange(
       categories.map((c) =>
         c.id === catId ? { ...c, games: c.games.filter((g) => g.id !== gameId) } : c
@@ -33,18 +34,21 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
     );
   }
 
-  function openDescription(game: Game) {
+  function openEditor(game: Game) {
     setExpandedGameId(game.id);
     setDraftDesc(game.description ?? "");
+    setDraftBggUrl(game.bggUrl ?? "");
   }
 
-  function closeDescription() {
+  function closeEditor() {
     setExpandedGameId(null);
     setDraftDesc("");
+    setDraftBggUrl("");
   }
 
-  function saveDescription(catId: string, gameId: string) {
+  function saveEditor(catId: string, gameId: string) {
     const desc = draftDesc.trim();
+    const url = draftBggUrl.trim();
     onCategoriesChange(
       categories.map((c) =>
         c.id === catId
@@ -52,14 +56,14 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
               ...c,
               games: c.games.map((g) =>
                 g.id === gameId
-                  ? { ...g, description: desc || undefined }
+                  ? { ...g, description: desc || undefined, bggUrl: url || undefined }
                   : g
               ),
             }
           : c
       )
     );
-    closeDescription();
+    closeEditor();
   }
 
   return (
@@ -99,15 +103,24 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
                       <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-1)" }}>
                         {game.name}
                       </div>
-                      {game.description && !isExpanded && (
-                        <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.4, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                          {game.description}
+                      {!isExpanded && (game.description || game.bggUrl) && (
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 2, minWidth: 0 }}>
+                          {game.description && (
+                            <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.4, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>
+                              {game.description}
+                            </div>
+                          )}
+                          {game.bggUrl && (
+                            <div style={{ fontSize: 10, color: "var(--cyan)", fontWeight: 600, flexShrink: 0 }}>
+                              BGG ✓
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
                     <button
-                      onClick={() => isExpanded ? closeDescription() : openDescription(game)}
-                      title={isExpanded ? "Cancel" : "Edit description"}
+                      onClick={() => isExpanded ? closeEditor() : openEditor(game)}
+                      title={isExpanded ? "Cancel" : "Edit description & BGG link"}
                       style={{
                         width: 22, height: 22, borderRadius: 5,
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -133,14 +146,14 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
                     </button>
                   </div>
 
-                  {/* Description editor */}
+                  {/* Editor panel */}
                   {isExpanded && (
-                    <div style={{ padding: "0 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ padding: "0 10px 10px", display: "flex", flexDirection: "column", gap: 8 }}>
                       <textarea
                         autoFocus
                         value={draftDesc}
                         onChange={(e) => setDraftDesc(e.target.value)}
-                        placeholder="Add a description for players…"
+                        placeholder="Description for players…"
                         rows={3}
                         style={{
                           width: "100%", padding: "7px 10px", borderRadius: 6,
@@ -150,9 +163,35 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
                           boxSizing: "border-box",
                         }}
                       />
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <div style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 600, flexShrink: 0 }}>
+                          BGG URL
+                        </div>
+                        <input
+                          value={draftBggUrl}
+                          onChange={(e) => setDraftBggUrl(e.target.value)}
+                          placeholder="https://boardgamegeek.com/boardgame/…"
+                          style={{
+                            flex: 1, padding: "6px 10px", borderRadius: 6,
+                            fontSize: 12, background: "var(--card)",
+                            border: "1px solid var(--border)", color: "var(--text-1)", outline: "none",
+                          }}
+                        />
+                        {draftBggUrl.trim() && (
+                          <a
+                            href={draftBggUrl.trim()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Test link"
+                            style={{ fontSize: 11, color: "var(--cyan)", textDecoration: "none", flexShrink: 0 }}
+                          >
+                            Test ↗
+                          </a>
+                        )}
+                      </div>
                       <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                         <button
-                          onClick={closeDescription}
+                          onClick={closeEditor}
                           style={{
                             padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
                             background: "transparent", color: "var(--text-3)",
@@ -162,7 +201,7 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
                           Cancel
                         </button>
                         <button
-                          onClick={() => saveDescription(cat.id, game.id)}
+                          onClick={() => saveEditor(cat.id, game.id)}
                           style={{
                             padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
                             background: "var(--cyan-dim)", color: "var(--cyan)",

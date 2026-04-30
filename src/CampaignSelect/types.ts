@@ -4,6 +4,7 @@ export interface Game {
   id: string;
   name: string;
   description?: string;
+  bggUrl?: string;
 }
 
 export interface Category {
