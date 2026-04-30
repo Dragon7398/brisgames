@@ -11,7 +11,7 @@ import type { Category, PlayerVotes, AllVotes, VoteStateResult } from "./types";
 export async function loadCategories(): Promise<Category[]> {
   const snap = await get(ref(db, "campaignGames"));
   if (!snap.exists()) return DEFAULT_CATEGORIES;
-  const data = snap.val() as Record<string, { id: string; name: string }[]>;
+  const data = snap.val() as Record<string, { id: string; name: string; description?: string }[]>;
   return DEFAULT_CATEGORIES.map((cat) => ({
     ...cat,
     games: data[cat.id] ?? cat.games,
@@ -19,7 +19,7 @@ export async function loadCategories(): Promise<Category[]> {
 }
 
 export async function saveCategories(categories: Category[]): Promise<void> {
-  const data: Record<string, { id: string; name: string }[]> = {};
+  const data: Record<string, { id: string; name: string; description?: string }[]> = {};
   categories.forEach((c) => { data[c.id] = c.games; });
   await set(ref(db, "campaignGames"), data);
 }

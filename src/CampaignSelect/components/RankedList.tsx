@@ -118,14 +118,24 @@ export function RankedList({ catId, games, voteData, newIds, onChange, onClearNe
 
             <DragHandle />
 
-            {/* Name */}
-            <div style={{
-              flex: 1, fontSize: 13, fontWeight: 500,
-              letterSpacing: "-0.01em", lineHeight: 1.3,
-              color: isVeto ? "var(--text-3)" : "var(--text-1)",
-              textDecoration: isVeto ? "line-through" : "none",
-            }}>
-              {game.name}
+            {/* Name + description */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 13, fontWeight: 500,
+                letterSpacing: "-0.01em", lineHeight: 1.3,
+                color: isVeto ? "var(--text-3)" : "var(--text-1)",
+                textDecoration: isVeto ? "line-through" : "none",
+              }}>
+                {game.name}
+              </div>
+              {game.description && (
+                <div style={{
+                  fontSize: 11, color: "var(--text-3)", lineHeight: 1.4,
+                  marginTop: 2, whiteSpace: "pre-wrap",
+                }}>
+                  {game.description}
+                </div>
+              )}
             </div>
 
             {isNew && <NewBadge />}
