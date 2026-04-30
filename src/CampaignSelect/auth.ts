@@ -1,17 +1,37 @@
 // ─── CampaignSelect — authentication helpers ──────────────────────────────────
-import { ref, get } from "firebase/database";
-import { db } from "../firebase";
+import { signInWithCustomToken, signOut } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
+import { auth, functions } from "../firebase";
 import { PLAYERS, ADMIN_ID } from "./data";
 import type { ScreenState } from "./types";
 
-// ── Firebase token validation ─────────────────────────────────────────────────
-export async function validatePlayerFirebase(
+// ── Firebase Auth ─────────────────────────────────────────────────────────────
+// Calls the mintAuthToken Cloud Function to validate the magic-link token.
+// On success the function returns a Firebase Auth custom token with
+// { playerId, isAdmin } claims, which we use to sign in so that the Realtime
+// Database security rules can enforce per-player write restrictions.
+export async function signInWithMagicToken(
   playerId: string,
   token: string
 ): Promise<boolean> {
   if (playerId !== ADMIN_ID && !PLAYERS[playerId]) return false;
-  const snap = await get(ref(db, `campaignTokens/${playerId}`));
-  return snap.exists() && snap.val() === token;
+
+  try {
+    const mintAuthToken = httpsCallable<
+      { playerId: string; token: string },
+      { customToken: string }
+    >(functions, "mintAuthToken");
+
+    const result = await mintAuthToken({ playerId, token });
+    await signInWithCustomToken(auth, result.data.customToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function signOutPlayer(): Promise<void> {
+  await signOut(auth);
 }
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
