@@ -61,15 +61,15 @@ export function VotingPage({ playerId, onBack }: VotingPageProps) {
 
   const activeCat  = categories.find((c) => c.id === activeTab)!;
   const catVotes   = votes[activeTab] ?? { order: activeCat.games.map((g) => g.id), hearts: {}, vetoes: {} };
-  const heartCount = Object.keys(catVotes.hearts).length;
-  const vetoCount  = Object.keys(catVotes.vetoes).length;
+  const heartCount = Object.keys(catVotes.hearts ?? {}).length;
+  const vetoCount  = Object.keys(catVotes.vetoes ?? {}).length;
   const totalNew   = Object.values(newGameIds).reduce((s, set) => s + set.size, 0);
 
   const tabBadge = (id: string): string | null => {
     const parts: string[] = [];
     const cv = votes[id];
     if (cv) {
-      const h = Object.keys(cv.hearts).length, v = Object.keys(cv.vetoes).length;
+      const h = Object.keys(cv.hearts ?? {}).length, v = Object.keys(cv.vetoes ?? {}).length;
       if (h > 0) parts.push(`❤️${h}`);
       if (v > 0) parts.push(`🚫${v}`);
     }

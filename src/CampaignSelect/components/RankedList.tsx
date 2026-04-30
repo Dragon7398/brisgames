@@ -16,7 +16,7 @@ export function RankedList({ catId, games, voteData, newIds, onChange, onClearNe
   const [dragFrom, setDragFrom] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
 
-  const { order, hearts, vetoes } = voteData;
+  const { order, hearts = {}, vetoes = {} } = voteData;
   const orderedGames = order.map((id) => games.find((g) => g.id === id)).filter(Boolean) as Game[];
 
   function applyOrder(newOrder: string[]) {
