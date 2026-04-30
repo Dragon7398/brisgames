@@ -1,18 +1,25 @@
 // ─── CampaignSelect — LoginScreen ─────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "./Shared";
-import { PLAYERS, PLAYER_TOKENS, ADMIN_ID } from "../data";
+import { PLAYERS, ADMIN_ID } from "../data";
 import { buildPlayerLink } from "../auth";
+import { loadPlayerTokens } from "../storage";
 
 interface LoginScreenProps {
-  onOpenPlayer: (playerId: string) => void;
+  onOpenPlayer: (playerId: string, token: string) => void;
 }
 
 export function LoginScreen({ onOpenPlayer }: LoginScreenProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [tokens, setTokens] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    loadPlayerTokens().then(setTokens);
+  }, []);
 
   function copyLink(pid: string) {
-    navigator.clipboard.writeText(buildPlayerLink(pid)).then(() => {
+    const token = tokens[pid] ?? "";
+    navigator.clipboard.writeText(buildPlayerLink(pid, token)).then(() => {
       setCopied(pid);
       setTimeout(() => setCopied(null), 2000);
     });
@@ -52,6 +59,11 @@ export function LoginScreen({ onOpenPlayer }: LoginScreenProps) {
     letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10,
   } as const;
 
+  function tokenLabel(pid: string) {
+    const t = tokens[pid];
+    return t ? `?player=${pid}&t=${t}` : "loading…";
+  }
+
   return (
     <div style={{ maxWidth: 540, margin: "0 auto", padding: "60px 28px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
@@ -75,13 +87,11 @@ export function LoginScreen({ onOpenPlayer }: LoginScreenProps) {
           <div key={pid} style={linkRowStyle}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color, flexShrink: 0 }} />
             <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-1)", minWidth: 86 }}>{p.name}</div>
-            <div style={tokenDisplayStyle}>
-              ?player={pid}&amp;t={PLAYER_TOKENS[pid]}
-            </div>
-            <button onClick={() => copyLink(pid)} style={copyBtnStyle(pid)}>
+            <div style={tokenDisplayStyle}>{tokenLabel(pid)}</div>
+            <button onClick={() => copyLink(pid)} style={copyBtnStyle(pid)} disabled={!tokens[pid]}>
               {copied === pid ? "✓ Copied" : "Copy"}
             </button>
-            <button onClick={() => onOpenPlayer(pid)} style={openBtnStyle}>
+            <button onClick={() => onOpenPlayer(pid, tokens[pid] ?? "")} style={openBtnStyle}>
               Open →
             </button>
           </div>
@@ -93,13 +103,11 @@ export function LoginScreen({ onOpenPlayer }: LoginScreenProps) {
       <div style={{ ...linkRowStyle, marginBottom: 24, border: "1px solid var(--border-hi)" }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--purple)", flexShrink: 0 }} />
         <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-1)", minWidth: 86 }}>Brisbe</div>
-        <div style={tokenDisplayStyle}>
-          ?player={ADMIN_ID}&amp;t={PLAYER_TOKENS[ADMIN_ID]}
-        </div>
-        <button onClick={() => copyLink(ADMIN_ID)} style={copyBtnStyle(ADMIN_ID)}>
+        <div style={tokenDisplayStyle}>{tokenLabel(ADMIN_ID)}</div>
+        <button onClick={() => copyLink(ADMIN_ID)} style={copyBtnStyle(ADMIN_ID)} disabled={!tokens[ADMIN_ID]}>
           {copied === ADMIN_ID ? "✓ Copied" : "Copy"}
         </button>
-        <button onClick={() => onOpenPlayer(ADMIN_ID)} style={openBtnStyle}>
+        <button onClick={() => onOpenPlayer(ADMIN_ID, tokens[ADMIN_ID] ?? "")} style={openBtnStyle}>
           Open →
         </button>
       </div>

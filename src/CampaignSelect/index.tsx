@@ -1,17 +1,30 @@
 // ─── CampaignSelect — main entry point ───────────────────────────────────────
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoginScreen, UnauthorisedScreen } from "./components/LoginScreen";
 import { VotingPage } from "./components/VotingPage";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { detectInitialScreen, pushUrl } from "./auth";
-import { PLAYER_TOKENS, ADMIN_ID } from "./data";
+import { detectInitialScreen, pushUrl, validatePlayerFirebase } from "./auth";
+import { ADMIN_ID } from "./data";
 import type { ScreenState } from "./types";
 
 export function CampaignSelect() {
   const [screen, setScreen] = useState<ScreenState>(() => detectInitialScreen());
 
-  function goToPlayer(playerId: string) {
-    pushUrl({ player: playerId, t: PLAYER_TOKENS[playerId] });
+  useEffect(() => {
+    if (screen.view !== "loading" || !screen.playerId) return;
+    const token = new URLSearchParams(window.location.search).get("t") ?? "";
+    validatePlayerFirebase(screen.playerId, token).then((valid) => {
+      if (!valid) { setScreen({ view: "unauth" }); return; }
+      if (screen.playerId === ADMIN_ID) {
+        setScreen({ view: "admin" });
+      } else {
+        setScreen({ view: "vote", playerId: screen.playerId });
+      }
+    });
+  }, [screen.view]);
+
+  function goToPlayer(playerId: string, token: string) {
+    pushUrl({ player: playerId, t: token });
     if (playerId === ADMIN_ID) {
       setScreen({ view: "admin" });
     } else {
@@ -26,6 +39,9 @@ export function CampaignSelect() {
 
   const { view, playerId } = screen;
 
+  if (view === "loading") {
+    return null;
+  }
   if (view === "admin") {
     return <AdminDashboard onBack={goToLogin} />;
   }

@@ -1,25 +1,10 @@
 // ─── CampaignSelect — authentication helpers ──────────────────────────────────
 import { ref, get } from "firebase/database";
 import { db } from "../firebase";
-import { PLAYERS, PLAYER_TOKENS, ADMIN_ID } from "./data";
+import { PLAYERS, ADMIN_ID } from "./data";
 import type { ScreenState } from "./types";
 
-// ── Client-side token validation ──────────────────────────────────────────────
-// Checks the token against the hardcoded PLAYER_TOKENS map.
-// brisbe (admin) is allowed even though they are not in the PLAYERS voting map.
-export function validatePlayerLocal(
-  playerId: string | null,
-  token: string | null
-): string | null {
-  if (!playerId || !token) return null;
-  if (playerId !== ADMIN_ID && !PLAYERS[playerId]) return null;
-  if (PLAYER_TOKENS[playerId] !== token) return null;
-  return playerId;
-}
-
-// ── Firebase token validation (production) ────────────────────────────────────
-// Reads token from ref(db, 'campaignTokens/{playerId}') and compares.
-// brisbe (admin) is allowed even though they are not in the PLAYERS voting map.
+// ── Firebase token validation ─────────────────────────────────────────────────
 export async function validatePlayerFirebase(
   playerId: string,
   token: string
@@ -32,13 +17,8 @@ export async function validatePlayerFirebase(
 // ── URL helpers ───────────────────────────────────────────────────────────────
 export function detectInitialScreen(): ScreenState {
   try {
-    const p = new URLSearchParams(window.location.search);
-    const pid = validatePlayerLocal(p.get("player"), p.get("t"));
-    if (pid) {
-      if (pid === ADMIN_ID) return { view: "admin" };
-      return { view: "vote", playerId: pid };
-    }
-    if (p.get("player")) return { view: "unauth" }; // param present, token wrong
+    const playerId = new URLSearchParams(window.location.search).get("player");
+    if (playerId) return { view: "loading", playerId };
   } catch { /* ignore URL parse errors */ }
   return { view: "login" };
 }
@@ -52,14 +32,14 @@ export function pushUrl(params: Record<string, string>): void {
   } catch { /* ignore URL parse errors */ }
 }
 
-export function buildPlayerLink(playerId: string): string {
+export function buildPlayerLink(playerId: string, token: string): string {
   try {
     const url = new URL(window.location.href);
     ["player", "t"].forEach((k) => url.searchParams.delete(k));
     url.searchParams.set("player", playerId);
-    url.searchParams.set("t", PLAYER_TOKENS[playerId]);
+    url.searchParams.set("t", token);
     return url.toString();
-  } catch (e) {
-    return `?player=${playerId}&t=${PLAYER_TOKENS[playerId]}`;
+  } catch {
+    return `?player=${playerId}&t=${token}`;
   }
 }
