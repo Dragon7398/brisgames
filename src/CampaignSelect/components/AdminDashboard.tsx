@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Logo } from "./Shared";
 import { AdminResults } from "./AdminResults";
 import { AdminManageGames } from "./AdminManageGames";
+import { AdminLinks } from "./AdminLinks";
 import { loadCategories, saveCategories } from "../storage";
 import type { Category } from "../types";
 
@@ -12,7 +13,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [adminTab,   setAdminTab]   = useState<"results" | "manage">("results");
+  const [adminTab,   setAdminTab]   = useState<"results" | "manage" | "links">("results");
   const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         background: "var(--surface)", border: "1px solid var(--border)",
         borderRadius: 10, padding: 4, width: "fit-content",
       }}>
-        {(["results", "manage"] as const).map((t) => (
+        {(["results", "manage", "links"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setAdminTab(t)}
@@ -68,7 +69,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
               transition: "all 0.13s", cursor: "pointer",
             }}
           >
-            {t === "results" ? "Results" : "Manage Games"}
+            {t === "results" ? "Results" : t === "manage" ? "Manage Games" : "Player Links"}
           </button>
         ))}
       </div>
@@ -79,8 +80,10 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         </div>
       ) : adminTab === "results" ? (
         <AdminResults categories={categories} />
-      ) : (
+      ) : adminTab === "manage" ? (
         <AdminManageGames categories={categories} onCategoriesChange={handleCategoriesChange} />
+      ) : (
+        <AdminLinks />
       )}
     </div>
   );

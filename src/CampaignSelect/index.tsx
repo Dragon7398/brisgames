@@ -23,15 +23,6 @@ export function CampaignSelect() {
     });
   }, [screen.view]);
 
-  function goToPlayer(playerId: string, token: string) {
-    pushUrl({ player: playerId, t: token });
-    if (playerId === ADMIN_ID) {
-      setScreen({ view: "admin" });
-    } else {
-      setScreen({ view: "vote", playerId });
-    }
-  }
-
   function goToLogin() {
     pushUrl({});
     setScreen({ view: "login" });
@@ -51,5 +42,5 @@ export function CampaignSelect() {
   if (view === "unauth") {
     return <UnauthorisedScreen onBack={goToLogin} />;
   }
-  return <LoginScreen onOpenPlayer={goToPlayer} />;
+  return <LoginScreen />;
 }
