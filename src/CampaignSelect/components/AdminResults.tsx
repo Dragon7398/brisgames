@@ -37,10 +37,10 @@ export function AdminResults({ categories }: AdminResultsProps) {
         for (const pid of activePlayers) {
           const cv = allVotes[pid]?.[catId];
           if (!cv) continue;
-          const rank = cv.order.indexOf(game.id);
+          const rank = (cv.order ?? []).indexOf(game.id);
           const r = rank === -1 ? n - 1 : rank;
-          const isHeart = !!cv.hearts[game.id];
-          const isVeto  = !!cv.vetoes[game.id];
+          const isHeart = !!((cv.hearts ?? {})[game.id]);
+          const isVeto  = !!((cv.vetoes ?? {})[game.id]);
           score += (n - r) + (isHeart ? 4 : 0) - (isVeto ? 4 : 0);
           if (isHeart) hearts++;
           if (isVeto)  vetoes++;
