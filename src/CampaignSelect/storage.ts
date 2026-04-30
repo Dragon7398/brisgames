@@ -1,7 +1,7 @@
 // ─── CampaignSelect — Firebase storage ───────────────────────────────────────
 import { ref, get, set, onValue } from "firebase/database";
 import { db } from "../firebase";
-import { DEFAULT_CATEGORIES } from "./data";
+import { CATEGORIES } from "./data";
 import type { Category, PlayerVotes, AllVotes, VoteStateResult } from "./types";
 
 // ── Game list ─────────────────────────────────────────────────────────────────
@@ -10,11 +10,10 @@ import type { Category, PlayerVotes, AllVotes, VoteStateResult } from "./types";
 
 export async function loadCategories(): Promise<Category[]> {
   const snap = await get(ref(db, "campaignGames"));
-  if (!snap.exists()) return DEFAULT_CATEGORIES;
-  const data = snap.val() as Record<string, { id: string; name: string; description?: string; bggUrl?: string }[]>;
-  return DEFAULT_CATEGORIES.map((cat) => ({
+  const data = (snap.val() ?? {}) as Record<string, { id: string; name: string; description?: string; bggUrl?: string }[]>;
+  return CATEGORIES.map((cat) => ({
     ...cat,
-    games: data[cat.id] ?? cat.games,
+    games: data[cat.id] ?? [],
   }));
 }
 
@@ -31,9 +30,9 @@ export function subscribeCampaignGames(
   return onValue(ref(db, "campaignGames"), (snap) => {
     const data = snap.val() ?? {};
     cb(
-      DEFAULT_CATEGORIES.map((cat) => ({
+      CATEGORIES.map((cat) => ({
         ...cat,
-        games: data[cat.id] ?? cat.games,
+        games: data[cat.id] ?? [],
       }))
     );
   });

@@ -1,5 +1,5 @@
 // ─── CampaignSelect — static data ────────────────────────────────────────────
-import type { Category, PlayerInfo, GroupInfo } from "./types";
+import type { PlayerInfo, GroupInfo } from "./types";
 
 // ── Admin identity ────────────────────────────────────────────────────────────
 // When a validated token matches this player ID, the app routes to the admin
@@ -24,54 +24,12 @@ export const GROUPS: Record<string, GroupInfo> = {
   sunday:   { label: "Sunday",      players: ["tritt", "klsanchez", "panvitae"] },
 };
 
-// ── Default game list ─────────────────────────────────────────────────────────
-// This is the fallback used when Firebase has no data yet.
-// In production, write this to ref(db, 'campaignGames') once using the
-// admin Manage Games UI or the seed script in scripts/generateTokens.ts.
-export const DEFAULT_CATEGORIES: Category[] = [
-  {
-    id: "major",
-    label: "Major Campaigns",
-    shortLabel: "Major",
-    games: [
-      { id: "m1",  name: "Frosthaven" },
-      { id: "m2",  name: "Arydia: The Paths We Dare Tread" },
-      { id: "m3",  name: "Stonesaga" },
-      { id: "m4",  name: "Gloomhaven: Jaws of the Lion" },
-      { id: "m5",  name: "Descent: Legends of the Dark" },
-      { id: "m6",  name: "Arkham Horror LCG" },
-      { id: "m7",  name: "Spirit Island Campaign" },
-      { id: "m8",  name: "Sleeping Gods" },
-      { id: "m9",  name: "Tainted Grail: The Fall of Avalon" },
-      { id: "m10", name: "Kingdom Death: Monster" },
-      { id: "m11", name: "Etherfields" },
-      { id: "m12", name: "Dead Reckoning" },
-      { id: "m13", name: "Pandemic Legacy Season 3" },
-    ],
-  },
-  {
-    id: "minor",
-    label: "Minor Campaigns",
-    shortLabel: "Minor",
-    games: [
-      { id: "n1", name: "Flash Point: Golden State Heroes" },
-      { id: "n2", name: "Marvel Champions" },
-      { id: "n3", name: "Freedom Five" },
-      { id: "n4", name: "Pandemic Season 2" },
-      { id: "n5", name: "Aeon's End Legacy" },
-    ],
-  },
-  {
-    id: "puzzle",
-    label: "Puzzle / Escape Room",
-    shortLabel: "Puzzle",
-    games: [
-      { id: "p1", name: "Exit: The Game" },
-      { id: "p2", name: "Unlock!" },
-      { id: "p3", name: "The Light In The Mist" },
-      { id: "p4", name: "Sherlock Holmes Consulting Detective" },
-      { id: "p5", name: "Mysterium Park" },
-    ],
-  },
+// ── Category definitions ──────────────────────────────────────────────────────
+// Structural metadata for each category. Game lists live in Firebase at
+// campaignGames/ and are merged onto these at load time in storage.ts.
+export const CATEGORIES: { id: string; label: string; shortLabel: string }[] = [
+  { id: "major",  label: "Major Campaigns",     shortLabel: "Major"  },
+  { id: "minor",  label: "Minor Campaigns",      shortLabel: "Minor"  },
+  { id: "puzzle", label: "Puzzle / Escape Room", shortLabel: "Puzzle" },
 ];
 

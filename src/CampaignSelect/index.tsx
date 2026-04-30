@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { LoginScreen, UnauthorisedScreen } from "./components/LoginScreen";
 import { VotingPage } from "./components/VotingPage";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { detectInitialScreen, pushUrl, signInWithMagicToken, signOutPlayer } from "./auth";
+import { detectInitialScreen, signInWithMagicToken, signOutPlayer } from "./auth";
 import { ADMIN_ID } from "./data";
 import type { ScreenState } from "./types";
 
@@ -23,10 +23,10 @@ export function CampaignSelect() {
     });
   }, [screen.view]);
 
-  function goToLogin() {
-    pushUrl({});
-    signOutPlayer();
-    setScreen({ view: "login" });
+  function goToMain() {
+    signOutPlayer().then(() => {
+      window.location.replace(window.location.pathname);
+    });
   }
 
   const { view, playerId } = screen;
@@ -35,13 +35,13 @@ export function CampaignSelect() {
     return null;
   }
   if (view === "admin") {
-    return <AdminDashboard onBack={goToLogin} />;
+    return <AdminDashboard onBack={goToMain} />;
   }
   if (view === "vote" && playerId) {
-    return <VotingPage playerId={playerId} onBack={goToLogin} />;
+    return <VotingPage playerId={playerId} onBack={goToMain} />;
   }
   if (view === "unauth") {
-    return <UnauthorisedScreen onBack={goToLogin} />;
+    return <UnauthorisedScreen onBack={goToMain} />;
   }
   return <LoginScreen />;
 }

@@ -387,7 +387,7 @@ export default function App() {
 
   return (
     <div
-      style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 28px 60px" }}
+      style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 28px 60px" }}
     >
       {/* Header */}
       <header
@@ -522,6 +522,7 @@ export default function App() {
         style={{
           display: "flex",
           alignItems: "center",
+          flexWrap: "wrap",
           gap: 8,
           marginBottom: 24,
           padding: "10px 14px",
@@ -559,65 +560,66 @@ export default function App() {
           }}
         />
 
-        {/* Player dropdown */}
-        <div
-          style={{
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <select
-            value={activePlayerSlug}
-            onChange={(e) => setActivePlayerSlug(e.target.value)}
-            style={{
-              appearance: "none",
-              WebkitAppearance: "none",
-              background: activePlayerSlug
-                ? "var(--purple-dim)"
-                : "transparent",
-              border: "1px solid",
-              borderColor: activePlayerSlug ? "#6660f544" : "var(--border)",
-              borderRadius: 20,
-              color: activePlayerSlug ? "var(--purple)" : "var(--text-3)",
-              fontSize: 12,
-              fontWeight: 500,
-              padding: "5px 28px 5px 13px",
-              cursor: "pointer",
-              outline: "none",
-              transition: "all 0.13s",
-              minWidth: 140,
-            }}
-          >
-            <option value="">Filter by player</option>
-            {Object.entries(players).map(([slug, p]) => (
-              <option key={slug} value={slug}>
-                {p.username}
-              </option>
-            ))}
-          </select>
+        <div className="gamer-filter-right">
+          {/* Player dropdown */}
           <div
             style={{
-              position: "absolute",
-              right: 10,
-              pointerEvents: "none",
-              color: activePlayerSlug ? "var(--purple)" : "var(--text-3)",
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            <ChevronDown />
+            <select
+              value={activePlayerSlug}
+              onChange={(e) => setActivePlayerSlug(e.target.value)}
+              style={{
+                appearance: "none",
+                WebkitAppearance: "none",
+                background: activePlayerSlug
+                  ? "var(--purple-dim)"
+                  : "transparent",
+                border: "1px solid",
+                borderColor: activePlayerSlug ? "#6660f544" : "var(--border)",
+                borderRadius: 20,
+                color: activePlayerSlug ? "var(--purple)" : "var(--text-3)",
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "5px 28px 5px 13px",
+                cursor: "pointer",
+                outline: "none",
+                transition: "all 0.13s",
+                minWidth: 140,
+              }}
+            >
+              <option value="">Filter by player</option>
+              {Object.entries(players).map(([slug, p]) => (
+                <option key={slug} value={slug}>
+                  {p.username}
+                </option>
+              ))}
+            </select>
+            <div
+              style={{
+                position: "absolute",
+                right: 10,
+                pointerEvents: "none",
+                color: activePlayerSlug ? "var(--purple)" : "var(--text-3)",
+              }}
+            >
+              <ChevronDown />
+            </div>
           </div>
-        </div>
 
-        {/* Game count */}
-        <div
-          style={{
-            marginLeft: "auto",
-            fontSize: 11,
-            color: "var(--text-3)",
-            fontWeight: 500,
-          }}
-        >
-          {gameCount} {gameCount === 1 ? "game" : "games"}
+          {/* Game count */}
+          <div
+            style={{
+              fontSize: 11,
+              color: "var(--text-3)",
+              fontWeight: 500,
+            }}
+          >
+            {gameCount} {gameCount === 1 ? "game" : "games"}
+          </div>
         </div>
       </div>
 

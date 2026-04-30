@@ -20,8 +20,9 @@ export interface Player    { username: string; }
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function priorityBar(priority: number): string {
-  if (priority === 3) return "linear-gradient(90deg, #48d9f3, #6660f5)";
-  if (priority === 2) return "#6660f5";
+  if (priority >= 90) return "linear-gradient(90deg, #48d9f3, #6660f5)";
+  if (priority >= 50) return "#6660f5";
+  if (priority >= 25) return "#48d9f3";
   return "transparent";
 }
 
@@ -37,13 +38,14 @@ export function GameCard({ game, allTags }: GameCardProps) {
 
   const gameTags = Object.keys(game.tags ?? {}).filter((k) => allTags[k]);
   const wasPlayed = game.players && Object.keys(game.players).length > 0;
+  const deemphasized = game.priority < 0;
 
   return (
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? "var(--card-hov)" : "var(--card)",
+        background: hov ? "var(--card-hov)" : deemphasized ? "var(--surface)" : "var(--card)",
         border: "1px solid",
         borderColor: hov ? "var(--border-hi)" : "var(--border)",
         borderRadius: 10,
@@ -66,7 +68,6 @@ export function GameCard({ game, allTags }: GameCardProps) {
           right: 0,
           height: 2,
           background: priorityBar(game.priority),
-          opacity: game.priority === 1 ? 0 : 1,
         }}
       />
 
@@ -83,7 +84,7 @@ export function GameCard({ game, allTags }: GameCardProps) {
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: "var(--text-1)",
+            color: deemphasized ? "var(--text-3)" : "var(--text-1)",
             lineHeight: 1.35,
             letterSpacing: "-0.01em",
             minWidth: 0,

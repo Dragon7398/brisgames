@@ -39,7 +39,7 @@ body {
 }
 
 header {
-  margin: 2rem 0;
+  margin: 0 0 2rem;
   display: flex;
   gap: 1.5rem;
   align-items: center;
@@ -178,6 +178,13 @@ select:focus + .focus {
   bottom: -1px;
   border: 2px solid var(--select-focus);
   border-radius: inherit;
+}
+
+.gamer-filter-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .select--disabled {
