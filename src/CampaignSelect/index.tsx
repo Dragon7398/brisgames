@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { LoginScreen, UnauthorisedScreen } from "./components/LoginScreen";
 import { VotingPage } from "./components/VotingPage";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { detectInitialScreen, pushUrl, validatePlayerFirebase } from "./auth";
+import { detectInitialScreen, pushUrl, signInWithMagicToken, signOutPlayer } from "./auth";
 import { ADMIN_ID } from "./data";
 import type { ScreenState } from "./types";
 
@@ -13,7 +13,7 @@ export function CampaignSelect() {
   useEffect(() => {
     if (screen.view !== "loading" || !screen.playerId) return;
     const token = new URLSearchParams(window.location.search).get("t") ?? "";
-    validatePlayerFirebase(screen.playerId, token).then((valid) => {
+    signInWithMagicToken(screen.playerId, token).then((valid) => {
       if (!valid) { setScreen({ view: "unauth" }); return; }
       if (screen.playerId === ADMIN_ID) {
         setScreen({ view: "admin" });
@@ -25,6 +25,7 @@ export function CampaignSelect() {
 
   function goToLogin() {
     pushUrl({});
+    signOutPlayer();
     setScreen({ view: "login" });
   }
 

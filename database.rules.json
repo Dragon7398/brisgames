@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "campaignVotes": {
+      ".read": "auth != null && auth.token.isAdmin === true",
+      "$playerId": {
+        ".read":  "auth != null && auth.token.playerId === $playerId",
+        ".write": "auth != null && (auth.token.playerId === $playerId || auth.token.isAdmin === true)"
+      }
+    },
+    "campaignGames": {
+      ".read":  "auth != null",
+      ".write": "auth != null && auth.token.isAdmin === true"
+    },
+    "campaignTokens": {
+      ".read":  "auth != null && auth.token.isAdmin === true",
+      ".write": "auth != null && auth.token.isAdmin === true"
+    }
+  }
+}
