@@ -1,6 +1,6 @@
 // ─── CampaignSelect — AdminManageGames ───────────────────────────────────────
 import { useState } from "react";
-import type { Category } from "../types";
+import type { Category, Game } from "../types";
 
 interface AdminManageGamesProps {
   categories: Category[];
@@ -9,6 +9,8 @@ interface AdminManageGamesProps {
 
 export function AdminManageGames({ categories, onCategoriesChange }: AdminManageGamesProps) {
   const [newGameName, setNewGameName] = useState<Record<string, string>>({});
+  const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+  const [draftDesc, setDraftDesc] = useState<string>("");
 
   function addGame(catId: string) {
     const name = (newGameName[catId] ?? "").trim();
@@ -23,11 +25,41 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
   }
 
   function removeGame(catId: string, gameId: string) {
+    if (expandedGameId === gameId) setExpandedGameId(null);
     onCategoriesChange(
       categories.map((c) =>
         c.id === catId ? { ...c, games: c.games.filter((g) => g.id !== gameId) } : c
       )
     );
+  }
+
+  function openDescription(game: Game) {
+    setExpandedGameId(game.id);
+    setDraftDesc(game.description ?? "");
+  }
+
+  function closeDescription() {
+    setExpandedGameId(null);
+    setDraftDesc("");
+  }
+
+  function saveDescription(catId: string, gameId: string) {
+    const desc = draftDesc.trim();
+    onCategoriesChange(
+      categories.map((c) =>
+        c.id === catId
+          ? {
+              ...c,
+              games: c.games.map((g) =>
+                g.id === gameId
+                  ? { ...g, description: desc || undefined }
+                  : g
+              ),
+            }
+          : c
+      )
+    );
+    closeDescription();
   }
 
   return (
@@ -47,31 +79,104 @@ export function AdminManageGames({ categories, onCategoriesChange }: AdminManage
           </div>
 
           <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {cat.games.map((game, i) => (
-              <div
-                key={game.id}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 7, background: "var(--surface)", border: "1px solid var(--border)" }}
-              >
-                <div style={{ fontSize: 10, color: "var(--text-3)", fontWeight: 600, minWidth: 18 }}>
-                  {i + 1}
-                </div>
-                <div style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "var(--text-1)" }}>
-                  {game.name}
-                </div>
-                <button
-                  onClick={() => removeGame(cat.id, game.id)}
-                  title="Remove game"
+            {cat.games.map((game, i) => {
+              const isExpanded = expandedGameId === game.id;
+              return (
+                <div
+                  key={game.id}
                   style={{
-                    width: 22, height: 22, borderRadius: 5,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "transparent", border: "1px solid var(--border)",
-                    color: "var(--text-3)", fontSize: 13, flexShrink: 0, cursor: "pointer",
+                    borderRadius: 7, background: "var(--surface)",
+                    border: "1px solid", borderColor: isExpanded ? "var(--cyan)" : "var(--border)",
+                    overflow: "hidden", transition: "border-color 0.1s",
                   }}
                 >
-                  ×
-                </button>
-              </div>
-            ))}
+                  {/* Main row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px" }}>
+                    <div style={{ fontSize: 10, color: "var(--text-3)", fontWeight: 600, minWidth: 18 }}>
+                      {i + 1}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-1)" }}>
+                        {game.name}
+                      </div>
+                      {game.description && !isExpanded && (
+                        <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.4, marginTop: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                          {game.description}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => isExpanded ? closeDescription() : openDescription(game)}
+                      title={isExpanded ? "Cancel" : "Edit description"}
+                      style={{
+                        width: 22, height: 22, borderRadius: 5,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: isExpanded ? "var(--cyan-dim)" : "transparent",
+                        border: "1px solid", borderColor: isExpanded ? "#48d9f344" : "var(--border)",
+                        color: isExpanded ? "var(--cyan)" : "var(--text-3)",
+                        fontSize: 12, flexShrink: 0, cursor: "pointer",
+                      }}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      onClick={() => removeGame(cat.id, game.id)}
+                      title="Remove game"
+                      style={{
+                        width: 22, height: 22, borderRadius: 5,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "transparent", border: "1px solid var(--border)",
+                        color: "var(--text-3)", fontSize: 13, flexShrink: 0, cursor: "pointer",
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Description editor */}
+                  {isExpanded && (
+                    <div style={{ padding: "0 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+                      <textarea
+                        autoFocus
+                        value={draftDesc}
+                        onChange={(e) => setDraftDesc(e.target.value)}
+                        placeholder="Add a description for players…"
+                        rows={3}
+                        style={{
+                          width: "100%", padding: "7px 10px", borderRadius: 6,
+                          fontSize: 12, lineHeight: 1.5,
+                          background: "var(--card)", border: "1px solid var(--border)",
+                          color: "var(--text-1)", outline: "none", resize: "vertical",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <button
+                          onClick={closeDescription}
+                          style={{
+                            padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                            background: "transparent", color: "var(--text-3)",
+                            border: "1px solid var(--border)", cursor: "pointer",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => saveDescription(cat.id, game.id)}
+                          style={{
+                            padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                            background: "var(--cyan-dim)", color: "var(--cyan)",
+                            border: "1px solid #48d9f344", cursor: "pointer",
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             {cat.games.length === 0 && (
               <div style={{ fontSize: 12, color: "var(--text-3)", padding: "12px 0", textAlign: "center" }}>
                 No games yet — add one below.
