@@ -59,16 +59,6 @@ async function main() {
     console.log(`  ${label.padEnd(18)} ${BASE_URL}?player=${pid}&t=${tok}`);
   }
 
-  // Seed the default game list if not present
-  const gamesExist = await get(ref(db, "campaignGames"));
-  if (!gamesExist.exists()) {
-    const { DEFAULT_CATEGORIES } = await import("../src/CampaignSelect/data");
-    const data: Record<string, unknown> = {};
-    DEFAULT_CATEGORIES.forEach((c) => { data[c.id] = c.games; });
-    await set(ref(db, "campaignGames"), data);
-    console.log("\n✓ Default game list seeded to Firebase at campaignGames/");
-  }
-
   process.exit(0);
 }
 
