@@ -91,6 +91,14 @@ export function saveVotes(playerId: string, votes: PlayerVotes): void {
   }, 500);
 }
 
+// ── Player tokens ─────────────────────────────────────────────────────────────
+// Firebase path: campaignTokens/{playerId}
+
+export async function loadPlayerTokens(): Promise<Record<string, string>> {
+  const snap = await get(ref(db, "campaignTokens"));
+  return snap.exists() ? (snap.val() as Record<string, string>) : {};
+}
+
 // ── Admin — read all votes ────────────────────────────────────────────────────
 // Firebase path: campaignVotes/
 

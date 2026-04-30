@@ -44,6 +44,6 @@ export interface GroupInfo {
 }
 
 export interface ScreenState {
-  view: "login" | "vote" | "admin" | "unauth";
+  view: "login" | "vote" | "admin" | "unauth" | "loading";
   playerId?: string;
 }
