@@ -41,7 +41,7 @@ export function AdminResults({ categories }: AdminResultsProps) {
           const r = rank === -1 ? n - 1 : rank;
           const isHeart = !!((cv.hearts ?? {})[game.id]);
           const isVeto  = !!((cv.vetoes ?? {})[game.id]);
-          score += (n - r) + (isHeart ? 4 : 0) - (isVeto ? 4 : 0);
+          score += (n - r) + (isHeart ? n/10 : 0) - (isVeto ? n/2 : 0);
           if (isHeart) hearts++;
           if (isVeto)  vetoes++;
           playerDetails[pid] = { rank: r + 1, isHeart, isVeto };
