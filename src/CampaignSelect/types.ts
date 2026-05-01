@@ -45,6 +45,14 @@ export interface GroupInfo {
   players: string[];
 }
 
+export interface Snapshot {
+  id: string;
+  createdAt: number;
+  groupId: GroupId;
+  votes: AllVotes;
+  games: Record<string, Game[]>;
+}
+
 export interface ScreenState {
   view: "login" | "vote" | "admin" | "unauth" | "loading";
   playerId?: string;

@@ -1,8 +1,8 @@
 // ─── CampaignSelect — Firebase storage ───────────────────────────────────────
-import { ref, get, set, onValue } from "firebase/database";
+import { ref, get, set, onValue, push } from "firebase/database";
 import { db } from "../firebase";
 import { CATEGORIES } from "./data";
-import type { Category, PlayerVotes, AllVotes, VoteStateResult } from "./types";
+import type { Category, Game, PlayerVotes, AllVotes, VoteStateResult, Snapshot } from "./types";
 
 // ── Game list ─────────────────────────────────────────────────────────────────
 // Firebase path: campaignGames/
@@ -110,5 +110,34 @@ export async function loadAllVotes(): Promise<AllVotes> {
 export function subscribeAllVotes(cb: (votes: AllVotes) => void): () => void {
   return onValue(ref(db, "campaignVotes"), (snap) => {
     cb(snap.exists() ? (snap.val() as AllVotes) : {});
+  });
+}
+
+// ── Snapshots ─────────────────────────────────────────────────────────────────
+// Firebase path: campaignSnapshots/{snapshotId}/
+//   { createdAt, groupId, votes, games }
+
+export async function saveSnapshot(
+  groupId: string,
+  votes: AllVotes,
+  games: Record<string, Game[]>
+): Promise<string> {
+  const newRef = push(ref(db, "campaignSnapshots"), {
+    createdAt: Date.now(),
+    groupId,
+    votes,
+    games,
+  });
+  return newRef.key!;
+}
+
+export function subscribeSnapshots(cb: (snapshots: Snapshot[]) => void): () => void {
+  return onValue(ref(db, "campaignSnapshots"), (snap) => {
+    if (!snap.exists()) { cb([]); return; }
+    const data = snap.val() as Record<string, Omit<Snapshot, "id">>;
+    const snapshots = Object.entries(data)
+      .map(([id, s]) => ({ ...s, id }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+    cb(snapshots);
   });
 }
