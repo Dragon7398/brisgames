@@ -4,6 +4,7 @@ import { Logo } from "./Shared";
 import { AdminResults } from "./AdminResults";
 import { AdminManageGames } from "./AdminManageGames";
 import { AdminLinks } from "./AdminLinks";
+import { AdminSnapshots } from "./AdminSnapshots";
 import { loadCategories, saveCategories } from "../storage";
 import type { Category } from "../types";
 
@@ -13,7 +14,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [adminTab,   setAdminTab]   = useState<"results" | "manage" | "links">("results");
+  const [adminTab,   setAdminTab]   = useState<"results" | "manage" | "links" | "snapshots">("results");
   const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         background: "var(--surface)", border: "1px solid var(--border)",
         borderRadius: 10, padding: 4, width: "fit-content",
       }}>
-        {(["results", "manage", "links"] as const).map((t) => (
+        {(["results", "manage", "links", "snapshots"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setAdminTab(t)}
@@ -69,7 +70,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
               transition: "all 0.13s", cursor: "pointer",
             }}
           >
-            {t === "results" ? "Results" : t === "manage" ? "Manage Games" : "Player Links"}
+            {t === "results" ? "Results" : t === "manage" ? "Manage Games" : t === "links" ? "Player Links" : "Snapshots"}
           </button>
         ))}
       </div>
@@ -82,8 +83,10 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         <AdminResults categories={categories} />
       ) : adminTab === "manage" ? (
         <AdminManageGames categories={categories} onCategoriesChange={handleCategoriesChange} />
-      ) : (
+      ) : adminTab === "links" ? (
         <AdminLinks />
+      ) : (
+        <AdminSnapshots categories={categories} />
       )}
     </div>
   );
